@@ -95,10 +95,13 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
 {
     TicToc t_r;
     cur_time = _cur_time;
-    cur_img = _img;
+    // cur_img = _img;
+    _img.copyTo(cur_img);
     row = cur_img.rows;
     col = cur_img.cols;
-    cv::Mat rightImg = _img1;
+    // cv::Mat rightImg = _img1;
+    cv::Mat rightImg;
+    _img1.copyTo(rightImg);
     /*
     {
         cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(3.0, cv::Size(8, 8));
@@ -117,6 +120,7 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
         if(hasPrediction)
         {
             cur_pts = predict_pts;
+            std::cout << "lkc 1" << std::endl;
             cv::calcOpticalFlowPyrLK(prev_img, cur_img, prev_pts, cur_pts, status, err, cv::Size(21, 21), 1, 
             cv::TermCriteria(cv::TermCriteria::COUNT+cv::TermCriteria::EPS, 30, 0.01), cv::OPTFLOW_USE_INITIAL_FLOW);
             
@@ -127,16 +131,24 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
                     succ_num++;
             }
             if (succ_num < 10)
+            {
+               std::cout << "lkc 2" << std::endl;
                cv::calcOpticalFlowPyrLK(prev_img, cur_img, prev_pts, cur_pts, status, err, cv::Size(21, 21), 3);
+            }
         }
         else
+        {
+            std::cout << "lkc 3" << std::endl;
             cv::calcOpticalFlowPyrLK(prev_img, cur_img, prev_pts, cur_pts, status, err, cv::Size(21, 21), 3);
+        }
+            
         // reverse check
         if(FLOW_BACK)
         {
             vector<uchar> reverse_status;
             vector<cv::Point2f> reverse_pts = prev_pts;
-            cv::calcOpticalFlowPyrLK(cur_img, prev_img, cur_pts, reverse_pts, reverse_status, err, cv::Size(21, 21), 1, 
+            std::cout << "lkc 4" << std::endl;
+            cv::calcOpticalFlowPyrLK(cur_img, prev_img, cur_pts, reverse_pts, reverse_status, err, cv::Size(21, 21), 2, 
             cv::TermCriteria(cv::TermCriteria::COUNT+cv::TermCriteria::EPS, 30, 0.01), cv::OPTFLOW_USE_INITIAL_FLOW);
             //cv::calcOpticalFlowPyrLK(cur_img, prev_img, cur_pts, reverse_pts, reverse_status, err, cv::Size(21, 21), 3); 
             for(size_t i = 0; i < status.size(); i++)
@@ -213,10 +225,30 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
             vector<uchar> status, statusRightLeft;
             vector<float> err;
             // cur left ---- cur right
-            cv::calcOpticalFlowPyrLK(cur_img, rightImg, cur_pts, cur_right_pts, status, err, cv::Size(21, 21), 3);
+            std::cout << "lkc 5" << std::endl;
+            cur_right_pts.resize(cur_pts.size() * 5);
+            status.resize(cur_pts.size() * 5);
+            err.resize(cur_pts.size() * 5);
+            std::cout<< "cur_img: " << cur_img.size() << std::endl;
+            std::cout<< "rightImg: " << rightImg.size() << std::endl;
+            std::cout<< "cur_pts: " << cur_pts.size() << std::endl;
+            std::cout<< "cur_right_pts: " << cur_right_pts.size() << std::endl;
+            // cv::Mat _cur_img(cur_img), _rightImg(rightImg), _cur_pts, _cur_right_pts, _status, _err;
+            // cv::calcOpticalFlowPyrLK(cur_img, rightImg, cur_pts, cur_right_pts, status, err, cv::Size(21, 21), 3);
+            cv::Ptr<cv::SparsePyrLKOpticalFlow> optflow = cv::SparsePyrLKOpticalFlow::create();
+            cv::Size ws(21, 21);
+            std::cout << "ws: " << ws.height << " " << ws.width << std::endl;
+            std::cout << "winSize: " << optflow->getWinSize() << std::endl;
+            optflow->setWinSize(ws);
+            std::cout << "winSize: " << optflow->getWinSize().height << " " << optflow->getWinSize().width << std::endl;
+            std::cout << "MaxLevel: " << optflow->getMaxLevel() << std::endl;
+            optflow->calc(cur_img, rightImg, cur_pts, cur_right_pts, status, err);
+
+            // optflow = cv::optical
             // reverse check cur right ---- cur left
             if(FLOW_BACK)
             {
+                std::cout << "lkc 6" << std::endl;
                 cv::calcOpticalFlowPyrLK(rightImg, cur_img, cur_right_pts, reverseLeftPts, statusRightLeft, err, cv::Size(21, 21), 3);
                 for(size_t i = 0; i < status.size(); i++)
                 {
