@@ -10,6 +10,7 @@
  *******************************************************/
 
 #include "feature_tracker.h"
+#include "optflow_ws.h"
 
 bool FeatureTracker::inBorder(const cv::Point2f &pt)
 {
@@ -235,14 +236,14 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
             std::cout<< "cur_right_pts: " << cur_right_pts.size() << std::endl;
             // cv::Mat _cur_img(cur_img), _rightImg(rightImg), _cur_pts, _cur_right_pts, _status, _err;
             // cv::calcOpticalFlowPyrLK(cur_img, rightImg, cur_pts, cur_right_pts, status, err, cv::Size(21, 21), 3);
-            cv::Ptr<cv::SparsePyrLKOpticalFlow> optflow = cv::SparsePyrLKOpticalFlow::create();
+            OptflowWS optflow;
             cv::Size ws(21, 21);
             std::cout << "ws: " << ws.height << " " << ws.width << std::endl;
-            std::cout << "winSize: " << optflow->getWinSize() << std::endl;
-            optflow->setWinSize(ws);
-            std::cout << "winSize: " << optflow->getWinSize().height << " " << optflow->getWinSize().width << std::endl;
-            std::cout << "MaxLevel: " << optflow->getMaxLevel() << std::endl;
-            optflow->calc(cur_img, rightImg, cur_pts, cur_right_pts, status, err);
+            std::cout << "winSize: " << optflow.getWinSize() << std::endl;
+            optflow.setWinSize(ws);
+            std::cout << "winSize: " << optflow.getWinSize().height << " " << optflow.getWinSize().width << std::endl;
+            std::cout << "MaxLevel: " << optflow.getMaxLevel() << std::endl;
+            optflow.calc(cur_img, rightImg, cur_pts, cur_right_pts, status, err);
 
             // optflow = cv::optical
             // reverse check cur right ---- cur left

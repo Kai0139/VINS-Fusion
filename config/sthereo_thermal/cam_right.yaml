@@ -7,8 +7,8 @@ image_height: 512
 distortion_parameters:
    k1: -4.2843872979999997e-01
    k2: 1.9476135429999999e-01
-   p1: 0.0
-   p2: 0.0
+   p1: 1.0e-6
+   p2: 1.0e-6
 projection_parameters:
    fx: 2.5233871067517285e+02
    fy: 2.5233871067517285e+02
